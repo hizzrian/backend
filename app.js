@@ -3,28 +3,33 @@ const app = express();
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const cors = require('cors');
-
 require('dotenv/config');
+const authJwt = require('./helpers/jwt');
+const errorHandler = require('./helpers/error-handler');
+
 
 app.use(cors());
-app.options('*', cors());
+app.options('*', cors())
 
 //middleware
-app.use(express.json());
+app.use(express.json())
 app.use(morgan('tiny'));
+app.use(authJwt());
+app.use('/public/uploads', express.static(__dirname + '/public/uploads'));
+app.use(errorHandler);
 
-//routers
-const productsRouter = require('./routers/products');
-const categoriesRouter = require('./routers/categories');
-const usersRouter = require('./routers/users');
-const ordersRouter = require('./routers/orders');
+//Routes
+const categoriesRoutes = require('./routers/categories');
+const productsRoutes = require('./routers/products');
+const usersRoutes = require('./routers/users');
+const ordersRoutes = require('./routers/orders');
 
 const api = process.env.API_URL;
 
-app.use(`${api}/products`, productsRouter);
-app.use(`${api}/categories`, categoriesRouter);
-app.use(`${api}/users`, usersRouter);
-app.use(`${api}/orders`, ordersRouter);
+app.use(`${api}/categories`, categoriesRoutes);
+app.use(`${api}/products`, productsRoutes);
+app.use(`${api}/users`, usersRoutes);
+app.use(`${api}/orders`, ordersRoutes);
 
 //Database
 mongoose.connect(process.env.CONNECTION_STRING, {
@@ -33,15 +38,14 @@ mongoose.connect(process.env.CONNECTION_STRING, {
     dbName: 'shop-database'
 })
 .then(()=>{
-    console.log('Database Connection read')
-}
-)
-.catch((err)=>{
+    console.log('Database Connection is ready...')
+})
+.catch((err)=> {
     console.log(err);
 })
 
 //Server
 app.listen(3000, ()=>{
-   
-    console.log('server is runniing');
+
+    console.log('server is running http://localhost:3000');
 })
