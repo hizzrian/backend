@@ -10,6 +10,10 @@ const marketSchema = mongoose.Schema({
         type: String,
         required: true,
     },
+    product: [{
+        type: String,
+        required: false
+    }],
     description: {
         type: String,
         required: true

@@ -1,166 +1,89 @@
-const {Product} = require('../models/product');
+const {Market} = require('../models/market');
 const express = require('express');
-const { Category } = require('../models/category');
+const { User } = require('../models/user');
+const { Product } = require('../models/product');
 const router = express.Router();
-const mongoose = require('mongoose');
-const multer = require('multer');
-const { put } = require('./categories');
-const { Router } = require('express');
-
-const FILE_TYPE_MAP = {
-    'image/png': 'png',
-    'image/jpeg': 'jpeg',
-    'image/jpg': 'jpg',
-}
-
-const storage = multer.diskStorage({ 
-    destination: function (req, file, cb){
-        const isValid = FILE_TYPE_MAP [file.mimetype];
-        let uploadError = new Error('Tipe Image Tidak Sesuai');
-        if (isValid){
-            uploadError = null
-        }
-        cb(uploadError, 'public/uploads')
-    }, 
-    filename: function (req, file, cb){
-        const fileName = file.originalname.split(' ').join('-');
-        const extension = FILE_TYPE_MAP[file.mimetype];
-        cb(null, `${fileName}-${Date.now()}.${extension}`);
-    }
-})
-const uploadOptions = multer({storage: storage})
 
 router.get(`/`, async (req, res) =>{
-    // localhost:3000/api/v1/products?categories=2342342,234234
-    let filter = {};
-    if(req.query.categories)
-    {
-         filter = {category: req.query.categories.split(',')}
-    }
+    const marketList = await Market.find();
 
-    const productList = await Product.find(filter).populate('category');
-
-    if(!productList) {
+    if(!marketList) {
         res.status(500).json({success: false})
     } 
-    res.send(productList);
+    res.status(200).send(marketList);
 })
 
-router.get(`/:id`, async (req, res) =>{
-    const product = await Product.findById(req.params.id).populate('category');
+router.get('/:id', async(req,res)=>{
+    const market = await Market.findById(req.params.id);
 
-    if(!product) {
-        res.status(500).json({success: false})
+    if(!market) {
+        res.status(500).json({message: 'The market with the given ID was not found.'})
     } 
-    res.send(product);
+    res.status(200).send(market);
 })
 
-router.post(`/`, uploadOptions.single('image'),  async (req, res) =>{
-    const category = await Category.findById(req.body.category);
-    if(!category) return res.status(400).send('Invalid Category')
-    const file = req.file;
-    if(!file) return res.status(400).send('File Tidak Ada')
-    const fileName = req.file.filename
-    const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
-    let product = new Product({
-        name: req.body.name,
-        description: req.body.description,
-        richDescription: req.body.richDescription,
-        image: `${basePath}${fileName}`,
-        brand: req.body.brand,
-        price: req.body.price,
-        category: req.body.category,
-        countInStock: req.body.countInStock,
-        rating: req.body.rating,
-        numReviews: req.body.numReviews,
-        isFeatured: req.body.isFeatured,
+
+router.post('/', async (req, res) => {
+    const user = await User.findById(req.body.user);
+    if (!user) return res.status(404).send('Invalid User')
+    let market = new Market({
+        user: req.body.user,
+        marketName: req.body.marketName,
+        description: req.body.description
     })
+    market = await market.save();
 
-    product = await product.save();
+    if(!market)
+    return res.status(400).send('the market cannot be created!')
 
-    if(!product) 
-    return res.status(500).send('The product cannot be created')
-
-    res.send(product);
+    res.send(market);
 })
 
-router.put('/:id', uploadOptions.single('image'),async (req, res)=> {
-    if(!mongoose.isValidObjectId(req.params.id)) {
-       return res.status(400).send('Invalid Product Id')
-    }
-    const category = await Category.findById(req.body.category);
-    if(!category) return res.status(400).send('Invalid Category')
+router.post('/:id', async (req, res) => {
+    const user = await User.findById(req.body.user);
+    if (!user) return res.status(404).send('Invalid User')
+    let market = new Market({
+        user: req.body.user,
+        marketName: req.body.marketName,
+        product: req.body.product,
+        description: req.body.description
+    })
+    market = await market.save();
 
-    const product = await Product.findById(req.params.id);
-    if(!product) return res.status(400).send('Invalid Product');
+    if(!market)
+    return res.status(400).send('the market cannot be created!')
 
-    const file = req.file;
-    let imagepath;
-    if (file) {
-        const fileName = file.filename
-        const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
-        imagepath = `${basePath}${fileName}`
-    } else {
-        imagepath = product.image;
-    }
+    res.send(market);
+})
 
-    const updatedProduct = await Product.findByIdAndUpdate(
+router.put('/:id',async (req, res)=> {
+    const market = await Market.findByIdAndUpdate(
         req.params.id,
         {
-            name: req.body.name,
-            description: req.body.description,
-            richDescription: req.body.richDescription,
-            image: imagepath,
-            brand: req.body.brand,
-            price: req.body.price,
-            category: req.body.category,
-            countInStock: req.body.countInStock,
-            rating: req.body.rating,
-            numReviews: req.body.numReviews,
-            isFeatured: req.body.isFeatured,
-        },
-        { new: true}
+            user: req.body.user,
+            marketName: req.body.marketName,
+            description: req.body.description
+        }
     )
+    
+    market = await market.save();
 
-    if(!updatedProduct)
-    return res.status(500).send('the product cannot be updated!')
+    if(!market)
+    return res.status(400).send('the market cannot be created!')
 
-    res.send(updatedProduct);
+    res.send(market);
 })
 
 router.delete('/:id', (req, res)=>{
-    Product.findByIdAndRemove(req.params.id).then(product =>{
-        if(product) {
-            return res.status(200).json({success: true, message: 'the product is deleted!'})
+    Market.findByIdAndRemove(req.params.id).then(market =>{
+        if(market) {
+            return res.status(200).json({success: true, message: 'the market is deleted!'})
         } else {
-            return res.status(404).json({success: false , message: "product not found!"})
+            return res.status(404).json({success: false , message: "market not found!"})
         }
     }).catch(err=>{
        return res.status(500).json({success: false, error: err}) 
     })
 })
-
-router.get(`/get/count`, async (req, res) =>{
-    const productCount = await Product.countDocuments((count) => count)
-
-    if(!productCount) {
-        res.status(500).json({success: false})
-    } 
-    res.send({
-        productCount: productCount
-    });
-})
-
-router.get(`/get/featured/:count`, async (req, res) =>{
-    const count = req.params.count ? req.params.count : 0
-    const products = await Product.find({isFeatured: true}).limit(+count);
-
-    if(!products) {
-        res.status(500).json({success: false})
-    } 
-    res.send(products);
-})
-
-
 
 module.exports =router;
