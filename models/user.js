@@ -5,10 +5,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    market: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Market',
-    },
     email: {
         type: String,
         required: true,
@@ -22,29 +18,13 @@ const userSchema = new mongoose.Schema({
         required: true,
     },
     isAdmin: {
-        type: Boolean,
-        default: false,
+        type: String,
+        default: "1",
     },
-    street: {
+    address: {
         type: String,
         default: ''
     },
-    apartment: {
-        type: String,
-        default: ''
-    },
-    zip :{
-        type: String,
-        default: ''
-    },
-    city: {
-        type: String,
-        default: ''
-    },
-    country: {
-        type: String,
-        default: ''
-    }
 
 });
 

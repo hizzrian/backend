@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { Market } = require('../models/market');
 
 router.get(`/`, async (req, res) => {
     const userList = await User.find().select('-passwordHash');
@@ -89,6 +90,7 @@ router.post('/login', async (req,res) => {
         }
     
         if(user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
+            
             const token = jwt.sign(
                 {
                     userId: user.id,
@@ -97,7 +99,12 @@ router.post('/login', async (req,res) => {
                 secret,
                 {expiresIn : '1d'}
             )
-           
+            if (user.isAdmin === "1") {
+                res.status(200).send({status: 200, user: user.email , token: token, error: 0, isAdmin: user.isAdmin}) 
+           }
+            if (user.isAdmin === "2") {
+                res.status(200).send({status: 200, user: user.email , token: token, error: 0, isAdmin: user.isAdmin}) 
+           }
             res.status(200).send({status: 200, user: user.email , token: token, error: 0}) 
         } else {
            res.status(500).send({status:500, message: "password atau email salah!", error: 1});
@@ -109,20 +116,15 @@ router.post('/login', async (req,res) => {
     
 })
 
-
+// Register user
 router.post('/register', async (req,res)=>{
     let user = new User({
         name: req.body.name,
         email: req.body.email,
-        market: req.body.market,
         passwordHash: bcrypt.hashSync(req.body.password, 10),
         phone: req.body.phone,
         isAdmin: req.body.isAdmin,
-        street: req.body.street,
-        apartment: req.body.apartment,
-        zip: req.body.zip,
-        city: req.body.city,
-        country: req.body.country,
+        address: req.body.address,
     })
     user = await user.save();
 
@@ -132,6 +134,20 @@ router.post('/register', async (req,res)=>{
     res.send(user);
 })
 
+//REGISTER Supplier 
+router.post('/register/:id/seller', async (req,res)=>{
+    let market = new Market({
+        user: req.params.id,
+        marketName: req.body.marketName,
+        description: req.body.description,
+    })
+    market = await market.save();
+
+    if(!market)
+    return res.status(400).send('the market cannot be created!')
+
+    res.send(market);
+})
 
 router.delete('/:id', (req, res)=>{
     User.findByIdAndRemove(req.params.id).then(user =>{

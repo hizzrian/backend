@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const { put } = require('./categories');
 const { Router } = require('express');
+const { Market } = require('../models/market');
 
 const FILE_TYPE_MAP = {
     'image/png': 'png',
@@ -55,14 +56,13 @@ router.get(`/:id`, async (req, res) =>{
     res.send(product);
 })
 
-router.post(`/`, uploadOptions.single('image'),  async (req, res) =>{
-    const category = await Category.findById(req.body.category);
-    if(!category) return res.status(400).send('Invalid Category')
+router.post(`/supplier/tambahproduk/:id`, uploadOptions.single('image'),  async (req, res) =>{
     const file = req.file;
     if(!file) return res.status(400).send('File Tidak Ada')
     const fileName = req.file.filename
     const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
     let product = new Product({
+        market: req.params.id,
         name: req.body.name,
         description: req.body.description,
         richDescription: req.body.richDescription,
