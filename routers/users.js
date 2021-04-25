@@ -100,12 +100,12 @@ router.post('/login', async (req,res) => {
                 {expiresIn : '1d'}
             )
             if (user.isAdmin === "1") {
-                res.status(200).send({status: 200, user: user.email , token: token, error: 0, isAdmin: user.isAdmin}) 
+                res.status(200).send({status: 200, userId: user.id, user: user.email , token: token, error: 0, isAdmin: user.isAdmin}) 
            }
             if (user.isAdmin === "2") {
-                res.status(200).send({status: 200, user: user.email , token: token, error: 0, isAdmin: user.isAdmin}) 
+                res.status(200).send({status: 200, userId: user.id, user: user.email , token: token, error: 0, isAdmin: user.isAdmin}) 
            }
-            res.status(200).send({status: 200, user: user.email , token: token, error: 0}) 
+            res.status(200).send({status: 200, user: user.email, userId: user.id, token: token, error: 0}) 
         } else {
            res.status(500).send({status:500, message: "password atau email salah!", error: 1});
         }    
