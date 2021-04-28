@@ -20,11 +20,23 @@ router.get(`/`, async (req, res) => {
 
 router.get('/:id', async(req,res)=>{
     const user = await User.findById(req.params.id).select('-passwordHash');
-
+    const market = await Market.find({ user: user.id })
+    let newMarket = {
+        userId: user.id,
+        isAdmin: user.isAdmin,
+        address: user.address,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        marketId: market[0].id,
+        marketName: market[0].marketName
+    }
+    console.log(market.id);
+    
     if(!user) {
         res.status(500).json({message: 'The user with the given ID was not found.'})
     } 
-    res.status(200).send(user);
+    res.status(200).send(newMarket);
 })
 
 router.post('/', async (req,res)=>{
@@ -83,32 +95,35 @@ router.put('/:id',async (req, res)=> {
 
 router.post('/login', async (req,res) => {
     const user = await User.findOne({email: req.body.email})
+    const market = await Market.find({user: user.id})
     const secret = process.env.secret;
     try {
         if(!user) {
             return res.status(400).send('The user not found');
         }
     
-        if(user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
+        if (user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
             
             const token = jwt.sign(
                 {
                     userId: user.id,
+                    // marketId: market.id,
                     isAdmin: user.isAdmin
                 },
                 secret,
-                {expiresIn : '1d'}
+                { expiresIn: '1d' }
             )
-            if (user.isAdmin === "1") {
-                res.status(200).send({status: 200, userId: user.id, user: user.email , token: token, error: 0, isAdmin: user.isAdmin}) 
-           }
-            if (user.isAdmin === "2") {
-                res.status(200).send({status: 200, userId: user.id, user: user.email , token: token, error: 0, isAdmin: user.isAdmin}) 
-           }
-            res.status(200).send({status: 200, user: user.email, userId: user.id, token: token, error: 0}) 
-        } else {
-           res.status(500).send({status:500, message: "password atau email salah!", error: 1});
-        }    
+                if (user.isAdmin === "1") {
+                    res.status(200).send({status: 200,  userId: user.id, user: user.email , token: token, error: 0, isAdmin: user.isAdmin}) 
+               }
+                if (user.isAdmin === "2") {
+                    res.status(200).send({status: 200, marketId:market[0].id, userId: user.id, user: user.email , token: token, error: 0, isAdmin: user.isAdmin}) 
+               }
+            // res.status(200).send({ status: 200, user: user.email, userId: user.id, token: token, error: 0 })
+        }
+        // } else {
+        //    res.status(500).send({status:500, message: "password atau email salah!", error: 1});
+        // }    
     } catch (error) {
         res.status(404).send({status:404, message:"Page Not Found"});
     }

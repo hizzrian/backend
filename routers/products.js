@@ -31,9 +31,15 @@ const storage = multer.diskStorage({
 })
 const uploadOptions = multer({storage: storage})
 
-router.get(`/`, async (req, res) =>{
+router.get(`/:id/habispakai`, async (req, res) => {
+    const market = await Market.findById(req.params.id)
+//     const category = await Category.find({id: productList.})
+//   console.log(category)
     // localhost:3000/api/v1/products?categories=2342342,234234
-    let filter = {};
+    let filter = {
+        market: market.id,
+
+    };
     if(req.query.categories)
     {
          filter = {category: req.query.categories.split(',')}
