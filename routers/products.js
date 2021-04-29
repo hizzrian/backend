@@ -29,9 +29,50 @@ const storage = multer.diskStorage({
         cb(null, `${fileName}-${Date.now()}.${extension}`);
     }
 })
-const uploadOptions = multer({storage: storage})
+const uploadOptions = multer({ storage: storage })
 
+//GET PRODUCTS ALL ->ANDROID
+router.get(`/`, async (req, res) =>{
+    // localhost:3000/api/v1/products?categories=2342342,234234
+    let filter = {};
+    if(req.query.categories)
+    {
+         filter = {category: req.query.categories.split(',')}
+    }
+
+    const productList = await Product.find(filter).populate('category');
+
+    if(!productList) {
+        res.status(500).json({success: false})
+    } 
+    res.send(productList);
+})
+
+//GET PRODUCTS TAB HABISPAKAI
 router.get(`/:id/habispakai`, async (req, res) => {
+    const market = await Market.findById(req.params.id)
+//     const category = await Category.find({id: productList.})
+//   console.log(category)
+    // localhost:3000/api/v1/products?categories=2342342,234234
+    let filter = {
+        market: market.id,
+
+    };
+    if(req.query.categories)
+    {
+         filter = {category: req.query.categories.split(',')}
+    }
+
+    const productList = await Product.find(filter).populate('category');
+
+    if(!productList) {
+        res.status(500).json({success: false})
+    } 
+    res.send(productList);
+})
+
+//GET PRODUCST TAB PETHOTEL
+router.get(`/:id/pethotel`, async (req, res) => {
     const market = await Market.findById(req.params.id)
 //     const category = await Category.find({id: productList.})
 //   console.log(category)
