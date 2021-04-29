@@ -26,6 +26,7 @@ const ordersRoutes = require('./routers/orders');
 const artikelsRoutes = require('./routers/artikels');
 const marketsRoutes = require('./routers/markets');
 const api = process.env.API_URL;
+const port = process.env.PORT;
 
 app.use(`${api}/categories`, categoriesRoutes);
 app.use(`${api}/products`, productsRoutes);
@@ -47,7 +48,7 @@ mongoose.connect(process.env.CONNECTION_STRING, {
 })
 
 //Server
-app.listen(3001, ()=>{
+app.listen(port || 3000, ()=>{
 
     console.log('server is running http://localhost:3001');
 })
