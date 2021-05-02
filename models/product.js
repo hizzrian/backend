@@ -25,6 +25,11 @@ const productSchema = mongoose.Schema({
     images: [{
         type: String
     }],
+    tipe: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Tipe',
+        required: true
+    },
     brand: {
         type: String,
         default: ''
@@ -61,6 +66,7 @@ const productSchema = mongoose.Schema({
         default: Date.now,
     },
 })
+
 
 productSchema.virtual('id').get(function () {
     return this._id.toHexString();

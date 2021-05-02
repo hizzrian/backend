@@ -7,6 +7,7 @@ const multer = require('multer');
 const { put } = require('./categories');
 const { Router } = require('express');
 const { Market } = require('../models/market');
+const { Tipe } = require('../models/tipe');
 
 const FILE_TYPE_MAP = {
     'image/png': 'png',
@@ -49,15 +50,18 @@ router.get(`/`, async (req, res) =>{
 })
 
 //GET PRODUCTS TAB HABISPAKAI
-router.get(`/:id/habispakai`, async (req, res) => {
+router.get(`/:id/habispakai/`, async (req, res) => {
     const market = await Market.findById(req.params.id)
+    // const tipe = await Tipe.findOne({name: "habis pakai"})
+    // const tipe = await Tipe.find({_id: ""})
+    // const newTipe = await Product.find({ tipe: tipe.id })
 //     const category = await Category.find({id: productList.})
 //   console.log(category)
-    // localhost:3000/api/v1/products?categories=2342342,234234
     let filter = {
         market: market.id,
-
+        tipe: "608d5adf6a3623372c02d48d",
     };
+
     if(req.query.categories)
     {
          filter = {category: req.query.categories.split(',')}
@@ -71,16 +75,19 @@ router.get(`/:id/habispakai`, async (req, res) => {
     res.send(productList);
 })
 
-//GET PRODUCST TAB PETHOTEL
-router.get(`/:id/pethotel`, async (req, res) => {
+//GET PRODUCTS TAB Hotel
+router.get(`/:id/hotel/`, async (req, res) => {
     const market = await Market.findById(req.params.id)
+    // const tipe = await Tipe.findOne({name: "habis pakai"})
+    // const tipe = await Tipe.find({_id: ""})
+    // const newTipe = await Product.find({ tipe: tipe.id })
 //     const category = await Category.find({id: productList.})
 //   console.log(category)
-    // localhost:3000/api/v1/products?categories=2342342,234234
     let filter = {
         market: market.id,
-
+        tipe: "608d5b246a3623372c02d48e",
     };
+    
     if(req.query.categories)
     {
          filter = {category: req.query.categories.split(',')}
@@ -94,6 +101,33 @@ router.get(`/:id/pethotel`, async (req, res) => {
     res.send(productList);
 })
 
+//GET PRODUCTS TAB Grooming
+router.get(`/:id/grooming/`, async (req, res) => {
+    const market = await Market.findById(req.params.id)
+    // const tipe = await Tipe.findOne({name: "habis pakai"})
+    // const tipe = await Tipe.find({_id: ""})
+    // const newTipe = await Product.find({ tipe: tipe.id })
+//     const category = await Category.find({id: productList.})
+//   console.log(category)
+    let filter = {
+        market: market.id,
+        tipe: "608d5b316a3623372c02d48f",
+    };
+    
+    if(req.query.categories)
+    {
+         filter = {category: req.query.categories.split(',')}
+    }
+
+    const productList = await Product.find(filter).populate('category');
+
+    if(!productList) {
+        res.status(500).json({success: false})
+    } 
+    res.send(productList);
+})
+
+// DETAIL PRODUCT
 router.get(`/:id`, async (req, res) =>{
     const product = await Product.findById(req.params.id).populate('category');
 
@@ -103,6 +137,7 @@ router.get(`/:id`, async (req, res) =>{
     res.send(product);
 })
 
+// Tambah Produk pake id market
 router.post(`/supplier/tambahproduk/:id`, uploadOptions.single('image'),  async (req, res) =>{
     const file = req.file;
     if(!file) return res.status(400).send('File Tidak Ada')
@@ -114,6 +149,7 @@ router.post(`/supplier/tambahproduk/:id`, uploadOptions.single('image'),  async 
         description: req.body.description,
         richDescription: req.body.richDescription,
         image: `${basePath}${fileName}`,
+        tipe: req.body.tipe,
         brand: req.body.brand,
         price: req.body.price,
         category: req.body.category,
@@ -175,6 +211,7 @@ router.put('/:id', uploadOptions.single('image'),async (req, res)=> {
     res.send(updatedProduct);
 })
 
+// DELETE PRODUK
 router.delete('/:id', (req, res)=>{
     Product.findByIdAndRemove(req.params.id).then(product =>{
         if(product) {
