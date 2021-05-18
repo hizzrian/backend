@@ -60,16 +60,16 @@ router.post('/', async (req,res)=>{
 //     res.send(artikel);
 // })
 
-// router.delete('/:id', (req, res)=>{
-//     Artikel.findByIdAndRemove(req.params.id).then(artikel =>{
-//         if(artikel) {
-//             return res.status(200).json({success: true, message: 'the category is deleted!'})
-//         } else {
-//             return res.status(404).json({success: false , message: "category not found!"})
-//         }
-//     }).catch(err=>{
-//        return res.status(500).json({success: false, error: err}) 
-//     })
-// })
+router.delete('/:id', (req, res)=>{
+    Artikel.findByIdAndRemove(req.params.id).then(artikel =>{
+        if(artikel) {
+            return res.status(200).json({success: true, message: 'the category is deleted!'})
+        } else {
+            return res.status(404).json({success: false , message: "category not found!"})
+        }
+    }).catch(err=>{
+       return res.status(500).json({success: false, error: err}) 
+    })
+})
 
 module.exports = router;
